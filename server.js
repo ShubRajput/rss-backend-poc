@@ -6,7 +6,10 @@ import apiRoutes from './routes/api.js'; // Adjust the path as needed
 const app = express();
 
 // Use middleware
-app.use(cors());
+const corsOptions = {
+  origin: "*"
+}
+app.use(cors(corsOptions));
 app.use(bodyParser.json()); // Parse incoming JSON requests
 
 // Use the API routes for '/api' path
