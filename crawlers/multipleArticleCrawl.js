@@ -4,7 +4,11 @@ import * as cheerio from 'cheerio';
 
 export async function extractArticlePreviews(url) {
   const { data: html } = await axios.get(url);
+  
+  
   const $ = cheerio.load(html);
+  console.log("$ is",$);
+  
 
   const articles = [];
 

@@ -4,6 +4,13 @@ import { summarizeWithAI } from "../ai/summarizer.js";
 import { extractArticlePreviews } from "../crawlers/multipleArticleCrawl.js";
 import { extractMainContent } from "../ai/summarizeArticle.js";
 import { summarizeWithHuggingFace } from "../ai/summarizeArticle.js";
+import {
+  extractWithDiffbot,
+  extractWithDiffbotAnalyze,
+} from "../services/diffbotService.js";
+import { fetchArticlesUsingScrapingBee } from "../services/scrappingBee.js";
+import { isYouTubeUrl } from "../utils/youtubeUtils.js";
+import { fetchYouTubeVideosWithScraping } from "../services/youTubeVideosWithScraping.js";
 
 export const feedExtractor = async (req, res) => {
   const { url } = req.body;
@@ -39,33 +46,112 @@ export const feedExtractor = async (req, res) => {
   }
 };
 
+// export const articleExtractor = async (req, res) => {
+//   try {
+//     const { url } = req.body;
+//     const homepageUrl = url;
+
+//     let articles = await extractArticlePreviews(homepageUrl);
+//     console.log("Primary articles found:", articles);
+
+//     let finalFeed = [];
+
+//     // Helper to process articles
+//     const processArticles = async (articleList) => {
+//       const results = [];
+
+//       for (const article of articleList) {
+//         try {
+//           const content = await extractMainContent(article.url);
+//           if (content && content.length > 100) {
+//             results.push({ ...article, content });
+//           }
+//         } catch (e) {
+//           console.error(`Error processing ${article.url}`, e.message);
+//         }
+//       }
+
+//       return results;
+//     };
+
+//     finalFeed = await processArticles(articles);
+
+//     // Fallback: Try deeper links if initial articles failed
+//     if (finalFeed.length === 0) {
+//       console.log("⚠️ No valid articles from primary scan. Trying fallback links...");
+
+//       const fallbackLinks = articles.map(a => a.url).slice(0, 5); // Limit fallback depth
+//       for (const fallbackUrl of fallbackLinks) {
+//         try {
+//           const subArticles = await extractArticlePreviews(fallbackUrl);
+//           console.log(`Fallback attempt on ${fallbackUrl}: Found ${subArticles.length} more articles`);
+
+//           const fallbackFeed = await processArticles(subArticles);
+//           finalFeed.push(...fallbackFeed);
+
+//           if (finalFeed.length > 0) break; // If success, break fallback loop
+//         } catch (err) {
+//           console.error(`Failed fallback on ${fallbackUrl}`, err.message);
+//         }
+//       }
+//     }
+
+//     if (finalFeed.length === 0) {
+//       return res.status(404).json({
+//         message: "No valid articles found, even after fallback.",
+//       });
+//     }
+
+//     return res.json({
+//       source: "html",
+//       articles: finalFeed,
+//     });
+//   } catch (error) {
+//     console.error("Critical Error:", error.message);
+//     res.status(500).json({ error: "Failed to fetch feed." });
+//   }
+// };
+
 export const articleExtractor = async (req, res) => {
   try {
     const { url } = req.body;
-    const homepageUrl = url; 
-    const articles = await extractArticlePreviews(homepageUrl);
-    console.log("articles is:---", articles);
-    
 
-    const finalFeed = [];
+    if (isYouTubeUrl(url)) {
+      const videos = await fetchYouTubeVideosWithScraping(url);
+      console.log("vdo data is", videos);
 
-    for (const article of articles) {
-      try {
-        const content = await extractMainContent(article.url);
-        // const summary = await summarizeWithHuggingFace(content);
-        finalFeed.push({ ...article, content });
-      } catch (e) {
-        console.error(`Error processing ${article.url}`, e.message);
+      if (!videos.length) {
+        const articles = await fetchArticlesUsingScrapingBee(url);
+        if (!articles.length) {
+          return res
+            .status(404)
+            .json({ message: "Unable to extract yotube article, please provide valid link." });
+        }
+
+        return res.json({
+          source: "scrapingBee",
+          articles,
+        });
+        
       }
+
+      return res.json({
+        source: "youtubeScrape",
+        articles: videos,
+      });
     }
 
-    // console.log(finalFeed);
-    return res.json({
-      source: "html",
-      article: finalFeed,
+    const articles = await fetchArticlesUsingScrapingBee(url);
+    if (!articles.length) {
+      return res.status(404).json({ message: "Unable to extract articles." });
+    }
+
+    res.json({
+      source: "scrapingBee",
+      articles,
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to fetch feed." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
