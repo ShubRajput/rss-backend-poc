@@ -117,30 +117,44 @@ export const articleExtractor = async (req, res) => {
     const { url } = req.body;
 
     if (isYouTubeUrl(url)) {
-      const videos = await fetchYouTubeVideosWithScraping(url);
-      console.log("vdo data is", videos);
+      console.log("YouTube URL received:", url);
 
+      // 🔁 Try scraping YouTube up to 3 times
+      let videos = [];
+      const maxRetries = 3;
+
+      for (let i = 0; i < maxRetries; i++) {
+        console.log(`Attempt ${i + 1} to fetch YouTube videos...`);
+        videos = await fetchYouTubeVideosWithScraping(url);
+        
+        if (videos.length) break; // ✅ If we get data, break out of loop
+      }
+
+      // ❌ If still no data, fallback
       if (!videos.length) {
+        console.log("All attempts failed. Falling back to generic article extraction...");
         const articles = await fetchArticlesUsingScrapingBee(url);
+
         if (!articles.length) {
-          return res
-            .status(404)
-            .json({ message: "Unable to extract yotube article, please provide valid link." });
+          return res.status(404).json({
+            message: "Unable to extract YouTube article. Please provide a valid link.",
+          });
         }
 
         return res.json({
           source: "scrapingBee",
           articles,
         });
-        
       }
 
+      // ✅ Successfully fetched YouTube video data
       return res.json({
         source: "youtubeScrape",
         articles: videos,
       });
     }
 
+    // 🌐 Non-YouTube: Use regular article scraping
     const articles = await fetchArticlesUsingScrapingBee(url);
     if (!articles.length) {
       return res.status(404).json({ message: "Unable to extract articles." });
@@ -151,7 +165,8 @@ export const articleExtractor = async (req, res) => {
       articles,
     });
   } catch (err) {
-    console.error(err);
+    console.error("Error in articleExtractor:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+

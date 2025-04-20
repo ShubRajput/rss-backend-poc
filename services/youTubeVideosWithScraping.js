@@ -9,14 +9,18 @@ export async function fetchYouTubeVideosWithScraping(url) {
     const { data: html } = await axios.get(scrapingBeeUrl, {
       params: {
         api_key: SCRAPINGBEE_API_KEY,
-        url: url,
+        url,
         render_js: true,
-      },
+        wait: 5000,           // 👈 Add wait time to allow JS to load
+        block_resources: false, // You can try this to load full content
+      }
+      
     });
-
+    console.log("Before cheerio");
+    
     const $ = cheerio.load(html);
     const videoData = [];
-
+    console.log("after cheerio");
     $('a#video-title').each((_, el) => {
       const title = $(el).text().trim();
       const href = $(el).attr('href');
@@ -30,6 +34,7 @@ export async function fetchYouTubeVideosWithScraping(url) {
           url,
           image: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
         });
+    
       }
     });
 
