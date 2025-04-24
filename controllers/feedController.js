@@ -11,15 +11,21 @@ import {
 import { fetchArticlesUsingScrapingBee } from "../services/scrappingBee.js";
 import { isYouTubeUrl } from "../utils/youtubeUtils.js";
 import { fetchYouTubeVideosWithScraping } from "../services/youTubeVideosWithScraping.js";
+import { handleYouTubeInputWithPlayDL } from '../controllers/puppeteer/puppeteer-youtube-scraper.js';
+import { fetchArticlesUsingPuppeteer } from "./puppeteer/fetchArticlesUsingPuppeteer.js";
+import { fetchTelegramChannelPostsUsingPuppeteer } from "./puppeteer/fetchTelegramChannelPostsUsingPuppeteer.js";
+// import { handleYouTubeInputWithPlayDL } from "./puppeteer/puppeteer-youtube-scraper.js";
+
 
 export const feedExtractor = async (req, res) => {
   const { url } = req.body;
-
+  console.log("URL recieved in feed controller", url);
+  
   try {
     const rssCheck = await checkForRSSFeed(url);
 
     if (rssCheck.isRSS) {
-      console.log("yesss rss is present");
+      console.log("rss is present");
 
       return res.json({
         source: "rss",
@@ -30,6 +36,7 @@ export const feedExtractor = async (req, res) => {
         })),
       });
     }
+    console.log("rss is not present");
 
     const article = await extractFromHTML(url);
 
@@ -170,3 +177,51 @@ export const articleExtractor = async (req, res) => {
   }
 };
 
+//Puppeteer Controllers
+
+
+
+// this is Final for YouTube.
+export const scrapeYouTubeVideos = async (req, res) => {
+  try {
+    const { url } = req.body;
+    console.log("URL is", url);
+    
+    if (!url) {
+      return res.status(400).json({ error: 'YouTube URL is required' });
+    }
+
+    const articles = await handleYouTubeInputWithPlayDL(url);
+    return res.status(200).json({ articles });
+  } catch (err) {
+    console.error('Error in scrapeYouTubeVideos:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch videos' });
+  }
+};
+
+
+export const scrapeArticlesWithPuppeteer = async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'URL is required' });
+
+    const articles = await fetchArticlesUsingPuppeteer(url);
+    return res.status(200).json({ articles });
+  } catch (err) {
+    console.error('Controller Error:', err.message);
+    return res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+export const scrapeTelegramPostWithPuppeteer = async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'URL is required' });
+
+    const articles = await fetchTelegramChannelPostsUsingPuppeteer(url);
+    return res.status(200).json({ articles });
+  } catch (err) {
+    console.error('Controller Error:', err.message);
+    return res.status(500).json({ error: 'Something went wrong' });
+  }
+};
