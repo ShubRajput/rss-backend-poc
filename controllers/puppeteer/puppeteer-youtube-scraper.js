@@ -17,7 +17,7 @@ export async function fetchYouTubeVideosWithPuppeteer(url) {
     const page = await browser.newPage();
     await page.goto(url, {
       waitUntil: 'networkidle2',
-      timeout: 60000,
+      timeout: 100000,
     });
 
     // Scroll to trigger lazy loading of videos
