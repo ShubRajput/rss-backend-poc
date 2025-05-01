@@ -1,7 +1,7 @@
 import express from 'express';
 import {  scrapeNews } from '../controllers/extractorController.js'; // Adjust the path as needed
 import { feedExtractor, articleExtractor } from '../controllers/feedController.js';
-import { scrapeYouTubeVideos, scrapeArticlesWithPuppeteer, scrapeTelegramPostWithPuppeteer } from '../controllers/feedController.js';
+import { scrapeYouTubeVideos, scrapeArticlesWithPuppeteer, scrapeTelegramPostWithPuppeteer, scrapeYouTubeVideosWithPlaywright } from '../controllers/feedController.js';
 // import { handleYouTubeInputWithYTDL } from '../controllers/puppeteer/puppeteer-youtube-scraper.js';
 
 const router = express.Router();
@@ -18,6 +18,8 @@ router.post("/articleExtractor", articleExtractor);
 router.post('/fetchYouTubeVideosWithPuppeteer', scrapeYouTubeVideos);
 router.post('/fetchArticlesUsingPuppeteer', scrapeArticlesWithPuppeteer);
 router.post('/fetchTelegramPostUsingPuppeteer', scrapeTelegramPostWithPuppeteer);
+router.post('/scrapeYouTubeVideosWithPlaywright', scrapeYouTubeVideosWithPlaywright);
+
 
 
 

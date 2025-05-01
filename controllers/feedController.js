@@ -15,6 +15,7 @@ import { handleYouTubeInputWithPlayDL } from '../controllers/puppeteer/puppeteer
 import { fetchArticlesUsingPuppeteer } from "./puppeteer/fetchArticlesUsingPuppeteer.js";
 import { fetchTelegramChannelPostsUsingPuppeteer } from "./puppeteer/fetchTelegramChannelPostsUsingPuppeteer.js";
 // import { handleYouTubeInputWithPlayDL } from "./puppeteer/puppeteer-youtube-scraper.js";
+import { handleYouTubeInputWithPlaywright } from "./puppeteer/playwright-youtube-scraper.js";
 
 
 export const feedExtractor = async (req, res) => {
@@ -195,6 +196,25 @@ export const scrapeYouTubeVideos = async (req, res) => {
     return res.status(200).json({ articles });
   } catch (err) {
     console.error('Error in scrapeYouTubeVideos:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch videos' });
+  }
+};
+
+// [this is youtube scrapper with playright as puppeteer was showing some issue in production]
+
+export const scrapeYouTubeVideosWithPlaywright = async (req, res) => {
+  try {
+    const { url } = req.body;
+    console.log("URL is", url);
+    
+    if (!url) {
+      return res.status(400).json({ error: 'YouTube URL is required' });
+    }
+
+    const articles = await handleYouTubeInputWithPlaywright(url);
+    return res.status(200).json({ articles });
+  } catch (err) {
+    console.error('Error in handleYouTubeInputWithPlaywright:', err);
     return res.status(500).json({ error: 'Failed to fetch videos' });
   }
 };

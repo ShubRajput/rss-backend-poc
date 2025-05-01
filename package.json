@@ -1,68 +1,38 @@
 {
-
   "type": "module",
-
   "name": "node",
-
   "version": "1.0.0",
-
   "main": "server.js",
-
   "scripts": {
-
     "test": "echo \"Error: no test specified\" && exit 1",
-
-    "start": "nodemon server.js"
-
+    "start": "nodemon server.js",
+    "postinstall": "npx playwright install chromium"
   },
-
   "author": "shubham rajput",
-
   "license": "ISC",
-
   "description": "",
-
   "dependencies": {
-
     "@mozilla/readability": "^0.6.0",
-
     "axios": "^1.8.4",
-
     "body-parser": "^1.20.3",
-
     "cheerio": "^1.0.0",
-
     "compromise": "^14.14.4",
-
     "cors": "^2.8.5",
-
     "dotenv": "^16.5.0",
-
     "express": "^4.21.2",
-
     "jsdom": "^26.0.0",
-
     "lodash": "^4.17.21",
-
     "mongoose": "^8.10.0",
-
     "node-summary": "^1.2.0",
-
     "nodemon": "^3.1.9",
-
     "openai": "^4.93.0",
-
     "play-dl": "^1.9.7",
-
     "puppeteer": "^24.6.1",
-
     "rss-parser": "^3.13.0",
-
     "xml2js": "^0.6.2",
-
     "ytdl-core": "^4.11.5"
-
+  },
+  "devDependencies": {
+    "playwright": "^1.52.0"
   }
-
 }
-
