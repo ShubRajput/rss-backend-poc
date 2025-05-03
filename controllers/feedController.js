@@ -11,7 +11,7 @@ import {
 import { fetchArticlesUsingScrapingBee } from "../services/scrappingBee.js";
 import { isYouTubeUrl } from "../utils/youtubeUtils.js";
 import { fetchYouTubeVideosWithScraping } from "../services/youTubeVideosWithScraping.js";
-import { handleYouTubeInputWithPlayDL } from '../controllers/puppeteer/puppeteer-youtube-scraper.js';
+import { fetchYouTubeVideosWithPuppeteer } from '../controllers/puppeteer/puppeteer-youtube-scraper.js';
 import { fetchArticlesUsingPuppeteer } from "./puppeteer/fetchArticlesUsingPuppeteer.js";
 import { fetchTelegramChannelPostsUsingPuppeteer } from "./puppeteer/fetchTelegramChannelPostsUsingPuppeteer.js";
 // import { handleYouTubeInputWithPlayDL } from "./puppeteer/puppeteer-youtube-scraper.js";
@@ -192,7 +192,7 @@ export const scrapeYouTubeVideos = async (req, res) => {
       return res.status(400).json({ error: 'YouTube URL is required' });
     }
 
-    const articles = await handleYouTubeInputWithPlayDL(url);
+    const articles = await fetchYouTubeVideosWithPuppeteer(url);
     return res.status(200).json({ articles });
   } catch (err) {
     console.error('Error in scrapeYouTubeVideos:', err.message);
