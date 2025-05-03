@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
-    "postinstall": "npx playwright install chromium"
+    "postinstall": "npx playwright install chromium",
+    "build": "./render-build.sh"
   },
   "author": "shubham rajput",
   "license": "ISC",
@@ -28,6 +29,7 @@
     "openai": "^4.93.0",
     "play-dl": "^1.9.7",
     "puppeteer": "^24.6.1",
+    "puppeteer-core": "^24.8.0",
     "rss-parser": "^3.13.0",
     "xml2js": "^0.6.2",
     "ytdl-core": "^4.11.5"

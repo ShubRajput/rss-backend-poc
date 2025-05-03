@@ -1,6 +1,6 @@
 // puppeteer-youtube-scraper.js
 
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 import play from 'play-dl';
 
 // === Function 1: Puppeteer YouTube Scraper ===
@@ -9,8 +9,9 @@ export async function fetchYouTubeVideosWithPuppeteer(url) {
   
   let browser;
   try {
-    browser = await puppeteer.launch({
-      headless: 'new',
+    const browser = await puppeteer.launch({
+      headless: true,
+      executablePath: '/usr/bin/chromium', // Path used in Debian/Ubuntu
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 

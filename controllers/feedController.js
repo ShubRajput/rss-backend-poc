@@ -15,7 +15,7 @@ import { handleYouTubeInputWithPlayDL } from '../controllers/puppeteer/puppeteer
 import { fetchArticlesUsingPuppeteer } from "./puppeteer/fetchArticlesUsingPuppeteer.js";
 import { fetchTelegramChannelPostsUsingPuppeteer } from "./puppeteer/fetchTelegramChannelPostsUsingPuppeteer.js";
 // import { handleYouTubeInputWithPlayDL } from "./puppeteer/puppeteer-youtube-scraper.js";
-import { handleYouTubeInputWithPlaywright } from "./puppeteer/playwright-youtube-scraper.js";
+import { handleYouTubeInputWithPlaywright } from "./playwright/playwright-youtube-scraper.js";
 
 
 export const feedExtractor = async (req, res) => {
