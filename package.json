@@ -6,8 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
-    "postinstall": "npx playwright install chromium",
+    "postinstall": "npx playwright install",
     "build": "./render-build.sh"
+
   },
   "author": "shubham rajput",
   "license": "ISC",
