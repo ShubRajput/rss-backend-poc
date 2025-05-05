@@ -100,8 +100,7 @@ import { chromium } from 'playwright';
 
 export async function handleYouTubeInputWithPlaywright(url) {
   const browser = await chromium.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    headless: true
   });
 
   const page = await browser.newPage();
