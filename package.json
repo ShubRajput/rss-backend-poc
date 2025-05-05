@@ -5,10 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-   "build": "./render-build.sh",
-  "postinstall": "./render-build.sh"
-
+    "start": "node server.js"
   },
   "author": "shubham rajput",
   "license": "ISC",
