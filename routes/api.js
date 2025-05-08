@@ -21,11 +21,11 @@ router.post('/fetchArticlesUsingPuppeteer', scrapeArticlesWithPuppeteer);
 router.post('/fetchTelegramPostUsingPuppeteer', scrapeTelegramPostWithPuppeteer);
 router.post('/scrapeYouTubeVideosWithPlaywright', scrapeYouTubeVideosWithPlaywright);
 router.post('/youtubeDataApi', async (req, res) => {
-    const { channelId } = req.body;
-    if (!channelId) return res.status(400).json({ error: 'channelId is required' });
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'url is required' });
   
     try {
-      const videos = await fetchVideosFromUrl(channelId);
+      const videos = await fetchVideosFromUrl(url);
       res.json({ videos });
     } catch (err) {
       res.status(500).json({ error: `Failed to fetch videos, ${err}` });

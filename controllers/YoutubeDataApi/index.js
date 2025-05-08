@@ -24,7 +24,7 @@ export async function fetchVideosFromUrl(inputUrl, maxResults = 30) {
       .filter((item) => item.id.kind === "youtube#video")
       .map((item) => ({
         title: item.snippet.title,
-        thumbnail: item.snippet.thumbnails.high.url,
+        image: item.snippet.thumbnails.high.url,
         url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
         publishedAt: item.snippet.publishedAt,
       }));
