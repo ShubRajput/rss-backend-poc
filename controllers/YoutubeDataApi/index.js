@@ -1,7 +1,6 @@
-// controllers/youtubeController.js
 import axios from "axios";
 
-const YOUTUBE_API_KEY = "AIzaSyApxMomnwpet3Tnlltxmy59mUb4xXVdPdk"; //Note: this google console project is setup in Darsh Yadav profile
+const YOUTUBE_API_KEY = "AIzaSyApxMomnwpet3Tnlltxmy59mUb4xXVdPdk";
 
 export async function fetchVideosFromUrl(inputUrl, maxResults = 30) {
   try {
@@ -37,47 +36,49 @@ export async function fetchVideosFromUrl(inputUrl, maxResults = 30) {
 }
 
 export async function extractChannelId(url) {
-    try {
-      // Direct /channel/UCxxxxxx
-      const channelMatch = url.match(/youtube\.com\/channel\/(UC[\w-]+)/);
-      if (channelMatch) return channelMatch[1];
-  
-      // Video URL → Get channelId from video metadata
-      const videoMatch = url.match(/v=([\w-]{11})|youtu\.be\/([\w-]{11})/);
-      const videoId = videoMatch?.[1] || videoMatch?.[2];
-      if (videoId) {
-        const res = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
-          params: {
-            key: process.env.YOUTUBE_API_KEY,
-            part: 'snippet',
-            id: videoId
-          }
-        });
-        return res.data.items?.[0]?.snippet?.channelId;
-      }
-  
-      // @handle, /user/, /c/ → Fetch HTML and extract channelId
-      const handleMatch = url.match(/youtube\.com\/(@[\w-]+|user\/[\w-]+|c\/[\w-]+)/);
-      if (handleMatch) {
-        const response = await axios.get(url, {
-          headers: {
-            'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36'
-          }
-        });
-        const html = response.data;
-  
-        // Improved regex to extract channelId
-        const idMatch = html.match(/"channelId":"(UC[\w-]{22})"/);
-        if (idMatch) return idMatch[1];
-  
-        // Try another structure
-        const metaMatch = html.match(/https:\/\/www\.youtube\.com\/channel\/(UC[\w-]{22})/);
-        if (metaMatch) return metaMatch[1];
-      }
-    } catch (error) {
-      console.error('Error extracting channel ID:', error.message);
+  try {
+    // 🎯 Case 1: RSS Feed URL
+    const rssMatch = url.match(/channel_id=(UC[\w-]+)/);
+    if (rssMatch) return rssMatch[1];
+
+    // 🎯 Case 2: Direct Channel URL
+    const channelMatch = url.match(/youtube\.com\/channel\/(UC[\w-]+)/);
+    if (channelMatch) return channelMatch[1];
+
+    // 🎯 Case 3: Video URL → Extract channelId via videoId
+    const videoMatch = url.match(/(?:v=|youtu\.be\/)([\w-]{11})/);
+    const videoId = videoMatch?.[1];
+    if (videoId) {
+      const res = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, {
+        params: {
+          key: YOUTUBE_API_KEY,
+          part: 'snippet',
+          id: videoId,
+        },
+      });
+      return res.data.items?.[0]?.snippet?.channelId;
     }
-  
-    return null;
+
+    // 🎯 Case 4: Handle (/@user), /user/, /c/ → Parse channelId from HTML
+    const handleMatch = url.match(/youtube\.com\/(@[\w-]+|user\/[\w-]+|c\/[\w-]+)/);
+    if (handleMatch) {
+      const response = await axios.get(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
+        },
+      });
+      const html = response.data;
+
+      const idMatch = html.match(/"channelId":"(UC[\w-]{22})"/);
+      if (idMatch) return idMatch[1];
+
+      const metaMatch = html.match(/https:\/\/www\.youtube\.com\/channel\/(UC[\w-]{22})/);
+      if (metaMatch) return metaMatch[1];
+    }
+  } catch (error) {
+    console.error("Error extracting channel ID:", error.message);
   }
+
+  return null;
+}
