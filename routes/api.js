@@ -13,6 +13,8 @@ import {
 // import { handleYouTubeInputWithYTDL } from '../controllers/puppeteer/puppeteer-youtube-scraper.js';
 import { fetchVideosFromUrl } from "../controllers/YoutubeDataApi/index.js";
 import { fetchArticlesUsingScraperAPI } from "../controllers/ScrapperAPI/index.js";
+import { fetchInstagramFeed } from "../controllers/ScrapperAPI/InstagramScraperAPI/index.js";
+import { fetchApifyInstagramFeed } from "../controllers/Apify/Instagram/index.js";
 
 const router = express.Router();
 
@@ -53,6 +55,32 @@ router.post("/model/scrapperapi", async (req, res) => {
 
   try {
     const article = await fetchArticlesUsingScraperAPI(url);
+    res.json({ article });
+  } catch (err) {
+    res.status(500).json({ error: `Failed to fetch videos, ${err}` });
+  }
+});
+
+router.post("/model/scrapperapi/instagram", async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: "url is required" });
+
+  try {
+    const article = await fetchInstagramFeed(url);
+    res.json({ article });
+  } catch (err) {
+    res.status(500).json({ error: `Failed to fetch videos, ${err}` });
+  }
+});
+
+router.post("/model/apify/instagram", async (req, res) => {
+  const { url } = req.body;
+  console.log("URl is", url);
+  
+  if (!url) return res.status(400).json({ error: "url is required" });
+
+  try {
+    const article = await fetchApifyInstagramFeed(url);
     res.json({ article });
   } catch (err) {
     res.status(500).json({ error: `Failed to fetch videos, ${err}` });
