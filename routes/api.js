@@ -1,9 +1,18 @@
-import express from 'express';
-import {  scrapeNews } from '../controllers/extractorController.js'; // Adjust the path as needed
-import { feedExtractor, articleExtractor } from '../controllers/feedController.js';
-import { scrapeYouTubeVideos, scrapeArticlesWithPuppeteer, scrapeTelegramPostWithPuppeteer, scrapeYouTubeVideosWithPlaywright } from '../controllers/feedController.js';
+import express from "express";
+import { scrapeNews } from "../controllers/extractorController.js"; // Adjust the path as needed
+import {
+  feedExtractor,
+  articleExtractor,
+} from "../controllers/feedController.js";
+import {
+  scrapeYouTubeVideos,
+  scrapeArticlesWithPuppeteer,
+  scrapeTelegramPostWithPuppeteer,
+  scrapeYouTubeVideosWithPlaywright,
+} from "../controllers/feedController.js";
 // import { handleYouTubeInputWithYTDL } from '../controllers/puppeteer/puppeteer-youtube-scraper.js';
-import { fetchVideosFromUrl } from '../controllers/YoutubeDataApi/index.js';
+import { fetchVideosFromUrl } from "../controllers/YoutubeDataApi/index.js";
+import { fetchArticlesUsingScraperAPI } from "../controllers/ScrapperAPI/index.js";
 
 const router = express.Router();
 
@@ -16,23 +25,38 @@ router.post("/fetch-feed", feedExtractor);
 router.post("/articleExtractor", articleExtractor);
 
 //puppeteer
-router.post('/fetchYouTubeVideosWithPuppeteer', scrapeYouTubeVideos);
-router.post('/fetchArticlesUsingPuppeteer', scrapeArticlesWithPuppeteer);
-router.post('/fetchTelegramPostUsingPuppeteer', scrapeTelegramPostWithPuppeteer);
-router.post('/scrapeYouTubeVideosWithPlaywright', scrapeYouTubeVideosWithPlaywright);
-router.post('/youtubeDataApi', async (req, res) => {
-    const { url } = req.body;
-    if (!url) return res.status(400).json({ error: 'url is required' });
-  
-    try {
-      const videos = await fetchVideosFromUrl(url);
-      res.json({ videos });
-    } catch (err) {
-      res.status(500).json({ error: `Failed to fetch videos, ${err}` });
-    }
+router.post("/fetchYouTubeVideosWithPuppeteer", scrapeYouTubeVideos);
+router.post("/fetchArticlesUsingPuppeteer", scrapeArticlesWithPuppeteer);
+router.post(
+  "/fetchTelegramPostUsingPuppeteer",
+  scrapeTelegramPostWithPuppeteer
+);
+router.post(
+  "/scrapeYouTubeVideosWithPlaywright",
+  scrapeYouTubeVideosWithPlaywright
+);
+router.post("/youtubeDataApi", async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: "url is required" });
+
+  try {
+    const videos = await fetchVideosFromUrl(url);
+    res.json({ videos });
+  } catch (err) {
+    res.status(500).json({ error: `Failed to fetch videos, ${err}` });
+  }
 });
 
+router.post("/model/scrapperapi", async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: "url is required" });
 
-
+  try {
+    const article = await fetchArticlesUsingScraperAPI(url);
+    res.json({ article });
+  } catch (err) {
+    res.status(500).json({ error: `Failed to fetch videos, ${err}` });
+  }
+});
 
 export default router;
