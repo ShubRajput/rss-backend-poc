@@ -1,9 +1,10 @@
 // controllers/instagramController.js
 
 import { ApifyClient } from "apify-client";
+import { API_KEY2 } from "../constant.js";
 
 const apifyClient = new ApifyClient({
-  token: "apify_api_QXMfBh9nt1gUKywVSJJge9ylSlUtSJ26TiAN", // move this to .env in production
+  token: API_KEY2,
 });
 
 export async function fetchApifyInstagramFeed(url) {
