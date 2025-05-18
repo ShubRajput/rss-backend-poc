@@ -1,12 +1,16 @@
 // utils/puppeteerArticleScraper.js
-import puppeteer from "puppeteer";
+import puppeteer from 'puppeteer-core';
 import { URL } from "url";
+import chromium from '@sparticuz/chromium';
 
 export async function fetchArticlesUsingPuppeteer(baseUrl) {
   try {
-    const browser = await puppeteer.launch({
-      headless: "new",
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+     const browser = await puppeteer.launch({
+      args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(), // Use Chromium executable
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
     });
 
     const page = await browser.newPage();
