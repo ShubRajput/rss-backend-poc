@@ -1,18 +1,26 @@
-# Use the official Playwright image with all deps preinstalled
-FROM mcr.microsoft.com/playwright:v1.52.0-jammy
+# Use Node.js 18
+FROM node:18-alpine
+
+# Install Puppeteer dependencies
+RUN apk add --no-cache chromium
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files and install deps
+# Copy package files
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy rest of your app
+# Copy app source
 COPY . .
 
-# Expose port (change if your server uses something else)
-EXPOSE 3000
+# Set Puppeteer executable path
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-# Start your app
-CMD ["npm", "start"]
+# Expose port
+EXPOSE 8080
+
+# Start the app
+CMD ["node", "server.js"]
