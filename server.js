@@ -16,7 +16,7 @@ app.use(bodyParser.json()); // Parse incoming JSON requests
 app.use('/api', apiRoutes);
 
 // Start the server
-const port = 8000;
+const port = process.env.PORT || 8000;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
