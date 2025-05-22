@@ -1,7 +1,7 @@
 // utils/puppeteerArticleScraper.js
-import puppeteer from 'puppeteer-core';
+import puppeteer from "puppeteer-core";
 import { URL } from "url";
-import chromium from '@sparticuz/chromium';
+import chromium from "@sparticuz/chromium";
 
 // Configuration constants
 const BROWSER_LAUNCH_TIMEOUT = 120000; // 2 minutes
@@ -10,27 +10,30 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 5000; // 5 seconds
 
 export async function fetchArticlesUsingPuppeteer(baseUrl) {
+  console.log("Reached in fetchArticlesUsingPuppeteer");
+
   let browser;
   try {
     // Optimized browser launch configuration
     const browser = await puppeteer.launch({
-  args: [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
-    '--single-process',
-    '--no-zygote',
-    '--disable-gpu',
-    '--disable-software-rasterizer',
-    '--disable-accelerated-2d-canvas'
-  ],
-  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-  headless: 'new',  // Use new Headless mode
-  ignoreHTTPSErrors: true,
-});
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--single-process",
+        "--no-zygote",
+        "--disable-gpu",
+        "--disable-software-rasterizer",
+        "--disable-accelerated-2d-canvas",
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+      headless: "new", // Use new Headless mode
+      ignoreHTTPSErrors: true,
+    });
+    console.log("after browser");
 
     const page = await browser.newPage();
-    
+
     // Set more aggressive timeouts
     await page.setDefaultNavigationTimeout(NAVIGATION_TIMEOUT);
     await page.setDefaultTimeout(NAVIGATION_TIMEOUT);
@@ -42,15 +45,19 @@ export async function fetchArticlesUsingPuppeteer(baseUrl) {
     await optimizedAutoScroll(page);
 
     // Extract articles with error handling
+    console.log("Before extractArticles");
+
     const articles = await extractArticles(page, baseUrl);
-    
+
     return articles;
   } catch (err) {
-    console.error("Puppeteer Article Scrape Error:", err.message);
+    console.error("Puppeteer Article Scrape Error:", err);
     return [];
   } finally {
     if (browser) {
-      await browser.close().catch(e => console.error('Browser close error:', e));
+      await browser
+        .close()
+        .catch((e) => console.error("Browser close error:", e));
     }
   }
 }
@@ -60,14 +67,14 @@ async function retryNavigation(page, url, retries = MAX_RETRIES) {
   for (let i = 0; i < retries; i++) {
     try {
       await page.goto(url, {
-        waitUntil: 'domcontentloaded', // Less strict than networkidle2
-        timeout: NAVIGATION_TIMEOUT
+        waitUntil: "domcontentloaded", // Less strict than networkidle2
+        timeout: NAVIGATION_TIMEOUT,
       });
       return;
     } catch (err) {
       if (i === retries - 1) throw err;
       console.log(`Retrying navigation (attempt ${i + 1})...`);
-      await new Promise(r => setTimeout(r, RETRY_DELAY));
+      await new Promise((r) => setTimeout(r, RETRY_DELAY));
     }
   }
 }
@@ -105,14 +112,21 @@ async function extractArticles(page, baseUrl) {
         const img = anchor.querySelector("img")?.src || null;
 
         // More robust filtering
-        if (!text || text.length < 15 || !href || 
-            href.startsWith('javascript:') || href.startsWith('mailto:')) {
+        if (
+          !text ||
+          text.length < 15 ||
+          !href ||
+          href.startsWith("javascript:") ||
+          href.startsWith("mailto:")
+        ) {
           return;
         }
 
         let absoluteUrl;
         try {
-          absoluteUrl = href.startsWith("http") ? href : new URL(href, baseUrl).href;
+          absoluteUrl = href.startsWith("http")
+            ? href
+            : new URL(href, baseUrl).href;
         } catch (e) {
           return;
         }
@@ -130,7 +144,7 @@ async function extractArticles(page, baseUrl) {
           });
         }
       } catch (e) {
-        console.error('Error processing anchor:', e);
+        console.error("Error processing anchor:", e);
       }
     });
 
