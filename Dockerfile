@@ -1,34 +1,54 @@
-# Use Node.js 18 with Alpine (smaller image)
-FROM node:18-alpine
+# Use Debian-based image for better compatibility
+FROM node:18-bullseye
 
-# Install Chromium and its dependencies
-RUN apk add --no-cache \
+# Install Chromium dependencies
+RUN apt-get update && \
+    apt-get install -y \
     chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    && rm -rf /var/cache/apk/*
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libc6 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libexpat1 \
+    libfontconfig1 \
+    libgbm1 \
+    libgcc1 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libstdc++6 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrandr2 \
+    libxrender1 \
+    libxss1 \
+    libxtst6 \
+    lsb-release \
+    wget \
+    xdg-utils && \
+    rm -rf /var/lib/apt/lists/*
 
-# Set Puppeteer env vars
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# Set Puppeteer config
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
-# Create app directory
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies (including puppeteer-core)
 RUN npm install
-
-# Copy app source
 COPY . .
-
-# Expose port
 EXPOSE 8080
-
-# Run the app
 CMD ["node", "server.js"]
