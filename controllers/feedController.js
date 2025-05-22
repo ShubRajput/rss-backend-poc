@@ -13,7 +13,7 @@ import { isYouTubeUrl } from "../utils/youtubeUtils.js";
 import { fetchYouTubeVideosWithScraping } from "../services/youTubeVideosWithScraping.js";
 import { fetchYouTubeVideosWithPuppeteer } from '../controllers/puppeteer/puppeteer-youtube-scraper.js';
 import { fetchArticlesUsingPuppeteer } from "./puppeteer/fetchArticlesUsingPuppeteer.js";
-import { fetchTelegramChannelPostsUsingPuppeteer } from "./puppeteer/fetchTelegramChannelPostsUsingPuppeteer.js";
+// import { fetchTelegramChannelPostsUsingPuppeteer } from "./puppeteer/fetchTelegramChannelPostsUsingPuppeteer.js";
 // import { handleYouTubeInputWithPlayDL } from "./puppeteer/puppeteer-youtube-scraper.js";
 import { handleYouTubeInputWithPlaywright } from "./playwright/playwright-youtube-scraper.js";
 
@@ -233,15 +233,15 @@ export const scrapeArticlesWithPuppeteer = async (req, res) => {
   }
 };
 
-export const scrapeTelegramPostWithPuppeteer = async (req, res) => {
-  try {
-    const { url } = req.body;
-    if (!url) return res.status(400).json({ error: 'URL is required' });
+// export const scrapeTelegramPostWithPuppeteer = async (req, res) => {
+//   try {
+//     const { url } = req.body;
+//     if (!url) return res.status(400).json({ error: 'URL is required' });
 
-    const articles = await fetchTelegramChannelPostsUsingPuppeteer(url);
-    return res.status(200).json({ articles });
-  } catch (err) {
-    console.error('Controller Error:', err.message);
-    return res.status(500).json({ error: 'Something went wrong' });
-  }
-};
+//     const articles = await fetchTelegramChannelPostsUsingPuppeteer(url);
+//     return res.status(200).json({ articles });
+//   } catch (err) {
+//     console.error('Controller Error:', err.message);
+//     return res.status(500).json({ error: 'Something went wrong' });
+//   }
+// };
