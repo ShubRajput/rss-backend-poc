@@ -13,22 +13,21 @@ export async function fetchArticlesUsingPuppeteer(baseUrl) {
   let browser;
   try {
     // Optimized browser launch configuration
-    browser = await puppeteer.launch({
-      args: [
-        ...chromium.args,
-        '--disable-dev-shm-usage', // Crucial for Docker/cloud environments
-        '--disable-gpu',
-        '--single-process',       // Reduces memory usage
-        '--no-zygote',
-        '--no-sandbox',
-        '--disable-setuid-sandbox'
-      ],
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-      ignoreHTTPSErrors: true,
-      timeout: BROWSER_LAUNCH_TIMEOUT
-    });
+    const browser = await puppeteer.launch({
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--single-process',
+    '--no-zygote',
+    '--disable-gpu',
+    '--disable-software-rasterizer',
+    '--disable-accelerated-2d-canvas'
+  ],
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+  headless: 'new',  // Use new Headless mode
+  ignoreHTTPSErrors: true,
+});
 
     const page = await browser.newPage();
     
