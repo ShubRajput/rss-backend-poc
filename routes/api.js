@@ -7,9 +7,9 @@ import {
 import {
   scrapeYouTubeVideos,
   scrapeArticlesWithPuppeteer,
-  // scrapeTelegramPostWithPuppeteer,
   scrapeYouTubeVideosWithPlaywright,
 } from "../controllers/feedController.js";
+import { scrapeTelegramChannel } from "../controllers/puppeteer/fetchTelegramChannelPostsUsingPuppeteer.js";
 // import { handleYouTubeInputWithYTDL } from '../controllers/puppeteer/puppeteer-youtube-scraper.js';
 import { fetchVideosFromUrl } from "../controllers/YoutubeDataApi/index.js";
 import { fetchArticlesUsingScraperAPI } from "../controllers/ScrapperAPI/index.js";
@@ -142,6 +142,20 @@ router.post("/model/apify/webscrapper", async (req, res) => {
 
   try {
     const article = await fetchArticlesFromWebsite(url);
+    res.json({ article });
+  } catch (err) {
+    res.status(500).json({ error: `Failed to fetch videos, ${err}` });
+  }
+});
+
+router.post("/model/puppeteer/telegramscrapper", async (req, res) => {
+  const { url } = req.body;
+  console.log("URl is", url);
+  
+  if (!url) return res.status(400).json({ error: "url is required" });
+
+  try {
+    const article = await scrapeTelegramChannel(url);
     res.json({ article });
   } catch (err) {
     res.status(500).json({ error: `Failed to fetch videos, ${err}` });

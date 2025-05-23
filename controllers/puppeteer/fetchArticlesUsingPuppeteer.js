@@ -1,7 +1,19 @@
 // utils/puppeteerArticleScraper.js
-import puppeteer from "puppeteer-core";
 import { URL } from "url";
-import chromium from "@sparticuz/chromium";
+
+// Environment configuration
+const isProduction = process.env.NODE_ENV === "production";
+let puppeteer;
+let chromium;
+
+if (isProduction) {
+  // Use puppeteer-core and chromium for production (AWS Lambda)
+  puppeteer = await import("puppeteer-core");
+  chromium = await import("@sparticuz/chromium");
+} else {
+  // Use full puppeteer for local development
+  puppeteer = await import("puppeteer");
+}
 
 // Configuration constants
 const BROWSER_LAUNCH_TIMEOUT = 120000; // 2 minutes
@@ -9,65 +21,12 @@ const NAVIGATION_TIMEOUT = 90000; // 1.5 minutes
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 5000; // 5 seconds
 
-export async function fetchArticlesUsingPuppeteer(baseUrl) {
-  console.log("Reached in fetchArticlesUsingPuppeteer");
-
-  let browser;
-  try {
-    // Optimized browser launch configuration
-    const browser = await puppeteer.launch({
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--single-process",
-        "--no-zygote",
-        "--disable-gpu",
-        "--disable-software-rasterizer",
-        "--disable-accelerated-2d-canvas",
-      ],
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
-      headless: "new", // Use new Headless mode
-      ignoreHTTPSErrors: true,
-    });
-    console.log("after browser");
-
-    const page = await browser.newPage();
-
-    // Set more aggressive timeouts
-    await page.setDefaultNavigationTimeout(NAVIGATION_TIMEOUT);
-    await page.setDefaultTimeout(NAVIGATION_TIMEOUT);
-
-    // Implement retry logic for navigation
-    await retryNavigation(page, baseUrl);
-
-    // Optimized scrolling
-    await optimizedAutoScroll(page);
-
-    // Extract articles with error handling
-    console.log("Before extractArticles");
-
-    const articles = await extractArticles(page, baseUrl);
-
-    return articles;
-  } catch (err) {
-    console.error("Puppeteer Article Scrape Error:", err);
-    return [];
-  } finally {
-    if (browser) {
-      await browser
-        .close()
-        .catch((e) => console.error("Browser close error:", e));
-    }
-  }
-}
-
 // Helper function with retry logic for navigation
 async function retryNavigation(page, url, retries = MAX_RETRIES) {
   for (let i = 0; i < retries; i++) {
     try {
       await page.goto(url, {
-        waitUntil: "domcontentloaded", // Less strict than networkidle2
+        waitUntil: "domcontentloaded",
         timeout: NAVIGATION_TIMEOUT,
       });
       return;
@@ -84,7 +43,7 @@ async function optimizedAutoScroll(page) {
   await page.evaluate(async () => {
     await new Promise((resolve) => {
       let totalHeight = 0;
-      const distance = 100; // Reduced scroll distance
+      const distance = 100;
       const timer = setInterval(() => {
         const scrollHeight = document.body.scrollHeight;
         window.scrollBy(0, distance);
@@ -94,12 +53,12 @@ async function optimizedAutoScroll(page) {
           clearInterval(timer);
           resolve();
         }
-      }, 500); // Increased interval
+      }, 500);
     });
   });
 }
 
-// Extracted article extraction logic with better filtering
+// Extracted article extraction logic
 async function extractArticles(page, baseUrl) {
   return await page.evaluate((baseUrl) => {
     const anchors = Array.from(document.querySelectorAll("a"));
@@ -111,7 +70,6 @@ async function extractArticles(page, baseUrl) {
         const href = anchor.getAttribute("href");
         const img = anchor.querySelector("img")?.src || null;
 
-        // More robust filtering
         if (
           !text ||
           text.length < 15 ||
@@ -131,7 +89,6 @@ async function extractArticles(page, baseUrl) {
           return;
         }
 
-        // Skip non-article URLs (optional)
         if (!absoluteUrl.match(/article|news|post/i)) {
           return;
         }
@@ -150,4 +107,66 @@ async function extractArticles(page, baseUrl) {
 
     return Array.from(articlesMap.values());
   }, baseUrl);
+}
+
+// Main exported function
+export async function fetchArticlesUsingPuppeteer(baseUrl) {
+  console.log("Starting fetchArticlesUsingPuppeteer");
+
+  let browser;
+  let page;
+  try {
+    // Browser launch configuration
+    const launchOptions = {
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+      ],
+      headless: isProduction ? "new" : true,
+      ignoreHTTPSErrors: true,
+    };
+
+    if (isProduction) {
+      launchOptions.executablePath = 
+        process.env.PUPPETEER_EXECUTABLE_PATH || 
+        await chromium.executablePath();
+      launchOptions.args.push(
+        "--single-process",
+        "--no-zygote",
+        "--disable-gpu",
+        "--disable-software-rasterizer",
+        "--disable-accelerated-2d-canvas"
+      );
+    } else {
+      launchOptions.args.push("--start-maximized");
+      launchOptions.slowMo = 50;
+    }
+
+    browser = await puppeteer.launch(launchOptions);
+    page = await browser.newPage();
+
+    await page.setDefaultNavigationTimeout(NAVIGATION_TIMEOUT);
+    await page.setDefaultTimeout(NAVIGATION_TIMEOUT);
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    );
+
+    await retryNavigation(page, baseUrl);
+    await page.waitForSelector('body', { timeout: 10000 });
+    await optimizedAutoScroll(page);
+
+    const articles = await extractArticles(page, baseUrl);
+    return articles;
+  } catch (err) {
+    console.error("Puppeteer error:", err);
+    throw err;
+  } finally {
+    try {
+      if (page && !page.isClosed()) await page.close();
+      if (browser) await browser.close();
+    } catch (e) {
+      console.error("Cleanup error:", e);
+    }
+  }
 }
