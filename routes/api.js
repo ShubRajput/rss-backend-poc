@@ -20,6 +20,7 @@ import { fetchApifyTelegramFeed } from "../controllers/Apify/Telegram/index.js";
 import { fetchApifyRedditFeed } from "../controllers/Apify/Reddit/index.js";
 import { fetchArticlesFromWebsite } from "../controllers/Apify/WebScrapper/index.js";
 import { scrapeRedditSubreddit } from "../controllers/puppeteer/puppeteerRedditScraper.js";
+import { scrapeLinkedInProfile } from "../controllers/puppeteer/puppeteerLinkedInScraper.js";
 
 const router = express.Router();
 
@@ -171,6 +172,20 @@ router.post("/model/puppeteer/redditscrapper", async (req, res) => {
 
   try {
     const article = await scrapeRedditSubreddit(url);
+    res.json({ article });
+  } catch (err) {
+    res.status(500).json({ error: `Failed to fetch reddit articles, ${err}` });
+  }
+});
+
+router.post("/model/puppeteer/linkedinscrapper", async (req, res) => {
+  const { url } = req.body;
+  console.log("URl is", url);
+  
+  if (!url) return res.status(400).json({ error: "url is required" });
+
+  try {
+    const article = await scrapeLinkedInProfile(url);
     res.json({ article });
   } catch (err) {
     res.status(500).json({ error: `Failed to fetch reddit articles, ${err}` });
