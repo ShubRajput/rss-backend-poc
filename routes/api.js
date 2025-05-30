@@ -21,6 +21,8 @@ import { fetchApifyRedditFeed } from "../controllers/Apify/Reddit/index.js";
 import { fetchArticlesFromWebsite } from "../controllers/Apify/WebScrapper/index.js";
 import { scrapeRedditSubreddit } from "../controllers/puppeteer/puppeteerRedditScraper.js";
 import { scrapeLinkedInProfile } from "../controllers/puppeteer/puppeteerLinkedInScraper.js";
+import { scrapeThreadsProfile } from "../controllers/puppeteer/puppeteerThreadsScraper.js";
+import { fetchMediumArticles } from "../controllers/puppeteer/puppeteerMediumScraper.js";
 
 const router = express.Router();
 
@@ -82,7 +84,7 @@ router.post("/model/scrapperapi/instagram", async (req, res) => {
 router.post("/model/apify/instagram", async (req, res) => {
   const { url } = req.body;
   console.log("URl is", url);
-  
+
   if (!url) return res.status(400).json({ error: "url is required" });
 
   try {
@@ -96,7 +98,7 @@ router.post("/model/apify/instagram", async (req, res) => {
 router.post("/model/apify/linkedin", async (req, res) => {
   const { url } = req.body;
   console.log("URl is", url);
-  
+
   if (!url) return res.status(400).json({ error: "url is required" });
 
   try {
@@ -107,11 +109,10 @@ router.post("/model/apify/linkedin", async (req, res) => {
   }
 });
 
-
 router.post("/model/apify/telegram", async (req, res) => {
   const { url } = req.body;
   console.log("URl is", url);
-  
+
   if (!url) return res.status(400).json({ error: "url is required" });
 
   try {
@@ -125,7 +126,7 @@ router.post("/model/apify/telegram", async (req, res) => {
 router.post("/model/apify/reddit", async (req, res) => {
   const { url } = req.body;
   console.log("URl is", url);
-  
+
   if (!url) return res.status(400).json({ error: "url is required" });
 
   try {
@@ -139,7 +140,7 @@ router.post("/model/apify/reddit", async (req, res) => {
 router.post("/model/apify/webscrapper", async (req, res) => {
   const { url } = req.body;
   console.log("URl is", url);
-  
+
   if (!url) return res.status(400).json({ error: "url is required" });
 
   try {
@@ -153,7 +154,7 @@ router.post("/model/apify/webscrapper", async (req, res) => {
 router.post("/model/puppeteer/telegramscrapper", async (req, res) => {
   const { url } = req.body;
   console.log("URl is", url);
-  
+
   if (!url) return res.status(400).json({ error: "url is required" });
 
   try {
@@ -167,7 +168,7 @@ router.post("/model/puppeteer/telegramscrapper", async (req, res) => {
 router.post("/model/puppeteer/redditscrapper", async (req, res) => {
   const { url } = req.body;
   console.log("URl is", url);
-  
+
   if (!url) return res.status(400).json({ error: "url is required" });
 
   try {
@@ -178,10 +179,38 @@ router.post("/model/puppeteer/redditscrapper", async (req, res) => {
   }
 });
 
+router.post("/model/puppeteer/threadscrapper", async (req, res) => {
+  const { url } = req.body;
+  console.log("URl is", url);
+
+  if (!url) return res.status(400).json({ error: "url is required" });
+
+  try {
+    const article = await scrapeThreadsProfile(url);
+    res.json({ article });
+  } catch (err) {
+    res.status(500).json({ error: `Failed to fetch threads articles, ${err}` });
+  }
+});
+
+router.post("/model/puppeteer/mediumScrapper", async (req, res) => {
+  const { url } = req.body;
+  console.log("URl is", url);
+
+  if (!url) return res.status(400).json({ error: "url is required" });
+
+  try {
+    const article = await fetchMediumArticles(url);
+    res.json({ article });
+  } catch (err) {
+    res.status(500).json({ error: `Failed to fetch threads articles, ${err}` });
+  }
+});
+
 router.post("/model/puppeteer/linkedinscrapper", async (req, res) => {
   const { url } = req.body;
   console.log("URl is", url);
-  
+
   if (!url) return res.status(400).json({ error: "url is required" });
 
   try {
