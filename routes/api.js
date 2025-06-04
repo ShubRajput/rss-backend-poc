@@ -23,6 +23,8 @@ import { scrapeRedditSubreddit } from "../controllers/puppeteer/puppeteerRedditS
 import { scrapeLinkedInProfile } from "../controllers/puppeteer/puppeteerLinkedInScraper.js";
 import { scrapeThreadsProfile } from "../controllers/puppeteer/puppeteerThreadsScraper.js";
 import { fetchMediumArticles } from "../controllers/puppeteer/puppeteerMediumScraper.js";
+import { fetchGenericContent } from "../controllers/puppeteer/fallBackScrapper.js";
+import { getHtmlContent, extractArticlesFromHTML } from "../controllers/puppeteer/geminiScrapper.js";
 
 const router = express.Router();
 
@@ -218,6 +220,35 @@ router.post("/model/puppeteer/linkedinscrapper", async (req, res) => {
     res.json({ article });
   } catch (err) {
     res.status(500).json({ error: `Failed to fetch reddit articles, ${err}` });
+  }
+});
+
+router.post("/model/puppeteer/genericscrapping", async (req, res) => {
+  const { url } = req.body;
+  console.log("URl is", url);
+
+  if (!url) return res.status(400).json({ error: "url is required" });
+
+  try {
+    const article = await fetchGenericContent(url);
+    res.json({ article });
+  } catch (err) {
+    res.status(500).json({ error: `Failed to fallback scrapping, ${err}` });
+  }
+});
+
+router.post("/model/puppeteer/ai/gemeniScrapping", async (req, res) => {
+  const { url } = req.body;
+  console.log("URl is", url);
+
+  if (!url) return res.status(400).json({ error: "url is required" });
+
+  try {
+    const html = await getHtmlContent(url);
+    const article = await extractArticlesFromHTML(html);
+    res.json({ article });
+  } catch (err) {
+    res.status(500).json({ error: `Failed to fallback scrapping, ${err}` });
   }
 });
 export default router;

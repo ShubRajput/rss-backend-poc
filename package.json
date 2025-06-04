@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@mozilla/readability": "^0.6.0",
     "@sparticuz/chromium": "^133.0.0",
     "apify-client": "^2.12.3",
@@ -30,8 +31,8 @@
     "nodemon": "^3.1.9",
     "openai": "^4.93.0",
     "play-dl": "^1.9.7",
-    "puppeteer": "^24.6.1",
-    "puppeteer-core": "^24.8.2",
+    "puppeteer": "^24.9.0",
+    "puppeteer-core": "^24.9.0",
     "rss-parser": "^3.13.0",
     "xml2js": "^0.6.2",
     "ytdl-core": "^4.11.5"
